@@ -1,0 +1,75 @@
+server:
+  port: 8088
+
+spring:
+  profiles:
+    active: weiran
+  application:
+    name: cloud-uaa
+  redis:
+    database: 0
+    host: ${DOCKER_REDIS:localhost}
+    port: 6379
+    password: wy123456
+    timeout: 5000 # 连接超时时间（毫秒）
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${DOCKER_NACOS:localhost}:8848
+        username: nacos
+        password: KCoMQrcZpJ
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      driverClassName: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://${DOCKER_DB:localhost}:3306/cloud-uaa?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+      username: root
+      password: 123456
+      initial-size: 5 # 初始化连接大小
+      max-active: 20 # 最大连接池数量
+      min-idle: 5 # 最小连接池数量
+      max-wait: 60000 # 获取连接时最大等待时间，单位毫秒
+      pool-prepared-statements: false # 是否开启PSCache，PSCache对支持游标的数据库性能提升巨大，oracle建议开启，mysql下建议关闭
+      max-pool-prepared-statement-per-connection-size: 20 # 开启poolPreparedStatements后生效
+      time-between-eviction-runs-millis: 60000 # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+      min-evictable-idle-time-millis: 300000 # 配置一个连接在池中最小生存的时间，单位是毫秒
+      max-evictable-idle-time-millis: 600000 # 配置一个连接在池中最小生存的时间，单位是毫秒,必须比配置大最小值大
+      validation-query: SELECT 1 FROM DUAL # 测试连接
+      # validation-query-timeout: 5000
+      test-on-borrow: false # 获取连接时执行检测，建议关闭，影响性能
+      test-on-return: false # 归还连接时执行检测，建议关闭，影响性能
+      test-while-idle: true # 申请连接的时候检测，建议配置为true，不影响性能，并且保证安全性
+      connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000 # 通过connectProperties属性来打开mergeSql功能;慢SQL记录
+      filters: stat,wall # 配置扩展插件，常用的插件有=>stat:监控统计  log4j:日志  wall:防御sql注入
+      stat-view-servlet:
+        enabled: true
+        url-pattern: /druid/* # druid监控页面，账号和密码都在配置类代码中配置
+  flyway:
+    enabled: true
+    # 版本更新历史记录表
+    table: t_db_version
+    # 非空数据库初始化Flyway时需要打开此开关进行Baseline操作
+    baseline-on-migrate: true
+    # 是否可以无序执行。开发环境最好开启 outOfOrder, 生产环境关闭 outOfOrder
+    out-of-order: false
+    # 迁移前校验 SQL 文件是否存在问题
+    validate-on-migrate: true
+
+management:
+  endpoints:
+    web:
+      # 开放指定节点 /actuator/（info, health, beans, env, metrics）或者全部
+      exposure:
+        include: '*'
+  # 在访问/actuator/health时显示完整信息
+  endpoint:
+    logfile:
+      external-file: log/cloud-uaa/uaa.log
+
+logging:
+  config: classpath:logback.xml
+
+app:
+  version: 1.0.9
+  swagger:
+    title: 微服务秒杀系统-登录接口文档
